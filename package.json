@@ -1,5 +1,6 @@
 {
   "name": "bridge",
+  "homepage": "https://iqballmuhammad.github.io/web-bridge-playground",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
