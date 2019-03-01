@@ -64,6 +64,7 @@ var QUEUE_HAS_MESSAGE = "__WVJB_QUEUE_MESSAGE__";
     setTimeout(function() {
       if (receivedMessages) {
         for (var i = 0; i < receivedMessages.length; i++) {
+          console.log(receivedMessages[i]);
           _dispatchMessageFromObjC(receivedMessages[i]);
         }
       }

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { HashRouter as Router, Route } from "react-router-dom";
 import WebBridgeLoader from "./helper/WebBridgeLoader";
 import LandingPage from "./components/LandingPage";
 import OtherPage from "./components/OtherPage";

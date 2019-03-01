@@ -1,22 +1,27 @@
 import React, { Component } from "react";
+import overlay from "../images/overlay.png";
 import "../App.css";
 
 class LandingPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isDim: false
+      isDim: false,
+      visitCount: 0
     };
   }
 
   componentDidMount() {
+    this.setState({ visitCount: this.state.visitCount + 1 });
     window.addEventListener("share", e => {
       this.showShare();
     });
   }
   showShare = () => {
+    const shareImage = document.getElementById("myImage").src;
     window["bridgeCallHandler"]("share", {
-      shareType: 4
+      shareType: 4,
+      genericImageUrl: shareImage
     });
   };
 
@@ -84,7 +89,8 @@ class LandingPage extends Component {
   };
 
   navigate = () => {
-    const url = `http://192.168.1.104:3000/other`;
+    const url = `${window.location.href}other`;
+    console.log(url);
     window["bridgeCallHandler"]("navigate", {
       url
     });
@@ -114,6 +120,32 @@ class LandingPage extends Component {
     });
   };
 
+  pickImage = () => {
+    window["bridgeCallHandler"](
+      "pickImage",
+      {
+        maxCount: 1,
+        type: 0
+      },
+      res => {
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        var imageObj1 = new Image();
+        var imageObj2 = new Image();
+        imageObj1.src = res.image;
+        imageObj1.onload = function() {
+          ctx.drawImage(imageObj1, 0, 0, 300, 300);
+          imageObj2.src = overlay;
+          imageObj2.onload = function() {
+            ctx.drawImage(imageObj2, 0, 0, 300, 300);
+            var img = c.toDataURL("image/png");
+            document.getElementById("myImage").src = img;
+          };
+        };
+      }
+    );
+  };
+
   render() {
     return (
       <div className="App">
@@ -124,6 +156,7 @@ class LandingPage extends Component {
         >
           <div className="overlay-text">Click anywhere to undim</div>
         </div>
+        <div>Visit Count: {this.state.visitCount}</div>
         <div className="item" onClick={this.showShare}>
           Show share menu
         </div>
@@ -145,6 +178,11 @@ class LandingPage extends Component {
         <div className="item" onClick={this.dimNavbar}>
           Dim navbar
         </div>
+        <div className="item" onClick={this.pickImage}>
+          Pick Image
+        </div>
+        <canvas id="myCanvas" width="300" height="300" />
+        <img id="myImage" style={{ display: "none" }} alt="myImage" />
         <div
           className="item"
           onClick={() => this.copy("Copy this text to clipboard!")}
