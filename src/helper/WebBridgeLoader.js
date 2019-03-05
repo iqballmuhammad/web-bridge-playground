@@ -17,6 +17,7 @@ class WebBridgeLoader {
     }
     const bridge = window["WebViewJavascriptBridge"];
     bridge.init();
+    window["bridgeRegisterHandler"] = bridge.registerHandler;
     window["bridgeCallHandler"] = bridge.callHandler;
     const bridgeCallHandler = window["bridgeCallHandler"];
     bridgeCallHandler("configurePage", {
