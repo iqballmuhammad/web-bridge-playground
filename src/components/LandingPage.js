@@ -40,7 +40,7 @@ class LandingPage extends Component {
       }
     });
 
-    window["bridgeRegisterHandler"]("onEventCallback", function(e) {
+    window["bridgeRegisterHandler"]("onEventCallback", e => {
       if (e.key == "share") {
         this.showShare();
       }
