@@ -16,7 +16,34 @@ class LandingPage extends Component {
     window.addEventListener("share", e => {
       this.showShare();
     });
+    this.initStream();
   }
+
+  initStream = () => {
+    // Grab elements, create settings, etc.
+    var video = document.getElementById("video");
+
+    // Get access to the camera!
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      // Not adding `{ audio: true }` since we only want video now
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(function(stream) {
+          // video.src = window.URL.createObjectURL(stream);
+          video.srcObject = stream;
+          video.play();
+        });
+    }
+
+    // Elements for taking the snapshot
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+
+    // Trigger photo take
+    document.getElementById("snap").addEventListener("click", function() {
+      context.drawImage(video, 0, 0, 640, 480);
+    });
+  };
   showShare = () => {
     const shareImage = document.getElementById("myImage").src;
     window["bridgeCallHandler"]("share", {
@@ -125,7 +152,7 @@ class LandingPage extends Component {
       "pickImage",
       {
         maxCount: 1,
-        type: 0
+        type: 1
       },
       res => {
         var c = document.getElementById("myCanvas");
@@ -137,7 +164,13 @@ class LandingPage extends Component {
           ctx.drawImage(imageObj1, 0, 0, 300, 300);
           imageObj2.src = overlay;
           imageObj2.onload = function() {
-            ctx.drawImage(imageObj2, 0, 0, 300, 300);
+            ctx.drawImage(
+              imageObj2,
+              0,
+              0,
+              imageObj2.naturalHeight,
+              imageObj2.naturalWidth
+            );
             var img = c.toDataURL("image/png");
             document.getElementById("myImage").src = img;
           };
@@ -156,7 +189,9 @@ class LandingPage extends Component {
         >
           <div className="overlay-text">Click anywhere to undim</div>
         </div>
-        <div>Visit Count: {this.state.visitCount}</div>
+        <video id="video" width="300" height="300" autoplay />
+        <button id="snap">Snap Photo</button>
+        <canvas id="canvas" width="300" height="300" />
         <div className="item" onClick={this.showShare}>
           Show share menu
         </div>
@@ -181,7 +216,7 @@ class LandingPage extends Component {
         <div className="item" onClick={this.pickImage}>
           Pick Image
         </div>
-        <canvas id="myCanvas" width="300" height="300" />
+        <canvas id="myCanvas" />
         <img id="myImage" style={{ display: "none" }} alt="myImage" />
         <div
           className="item"
