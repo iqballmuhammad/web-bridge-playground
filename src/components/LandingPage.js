@@ -11,16 +11,76 @@ class LandingPage extends Component {
     };
   }
 
+  toUTF8Array(str) {
+    var utf8 = [];
+    for (var i = 0; i < str.length; i++) {
+      var charcode = str.charCodeAt(i);
+      if (charcode < 0x80) utf8.push(charcode);
+      else if (charcode < 0x800) {
+        utf8.push(0xc0 | (charcode >> 6), 0x80 | (charcode & 0x3f));
+      } else if (charcode < 0xd800 || charcode >= 0xe000) {
+        utf8.push(
+          0xe0 | (charcode >> 12),
+          0x80 | ((charcode >> 6) & 0x3f),
+          0x80 | (charcode & 0x3f)
+        );
+      }
+      // surrogate pair
+      else {
+        i++;
+        charcode = ((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff);
+        utf8.push(
+          0xf0 | (charcode >> 18),
+          0x80 | ((charcode >> 12) & 0x3f),
+          0x80 | ((charcode >> 6) & 0x3f),
+          0x80 | (charcode & 0x3f)
+        );
+      }
+    }
+    return utf8;
+  }
+
   componentDidMount() {
     this.setState({ visitCount: this.state.visitCount + 1 });
   }
 
   showShare = () => {
+    // const shareImage = `https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500`;
     const shareImage = document.getElementById("myImage").src;
-    window["bridgeCallHandler"]("share", {
-      shareType: 4,
-      genericImageUrl: shareImage
-    });
+    // window["bridgeCallHandler"]("share", {
+    //   shareType: 4,
+    //   genericImageUrl: shareImage
+    // });
+    window["bridgeCallHandler"](
+      "showSharingPanel",
+      {
+        title: "Share Title",
+        sharingAppIDsTop: [
+          "facebookPhoto",
+          "facebookMessenger",
+          "twitter",
+          "instagram",
+          "lineChat"
+        ]
+      },
+      ({ status, sharingAppID }) => {
+        console.log(status, sharingAppID);
+        window["bridgeCallHandler"](
+          "shareData",
+          {
+            sharingAppID,
+            sharingData: {
+              image: {
+                imageBase64: shareImage
+              }
+            }
+          },
+          ({ errorCode, errorMessage }) => {
+            console.log("Share result: " + errorCode, errorMessage);
+          }
+        );
+      }
+    );
   };
 
   addShare = () => {
@@ -41,7 +101,7 @@ class LandingPage extends Component {
     });
 
     window["bridgeRegisterHandler"]("onEventCallback", e => {
-      if (e.key == "share") {
+      if (e.key === "share") {
         this.showShare();
       }
     });
@@ -155,6 +215,12 @@ class LandingPage extends Component {
     );
   };
 
+  saveImage = () => {
+    window["bridgeCallHandler"]("saveImage", {
+      imageUrl: document.getElementById("myImage").src
+    });
+  };
+
   render() {
     return (
       <div className="App">
@@ -186,10 +252,13 @@ class LandingPage extends Component {
         <div className="item" onClick={this.dimNavbar}>
           Dim navbar
         </div>
+        <div className="item" onClick={this.saveImage}>
+          Save Image
+        </div>
         <div className="item" onClick={this.pickImage}>
           Pick Image
         </div>
-        <canvas id="myCanvas" />
+        <canvas id="myCanvas" height="300" width="300" />
         <img id="myImage" style={{ display: "none" }} alt="myImage" />
         <div
           className="item"

@@ -179,6 +179,8 @@ var QUEUE_HAS_MESSAGE = "__WVJB_QUEUE_MESSAGE__";
       sendMessageQueue.push(message);
       messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + "://" + QUEUE_HAS_MESSAGE;
     } else {
+      console.log(window.gabridge);
+      console.log(message);
       window.gabridge.sendMsg(JSON.stringify(message));
     }
   }
