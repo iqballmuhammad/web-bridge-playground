@@ -1,13 +1,17 @@
 import React, { Component } from "react";
 import overlay from "../images/overlay.png";
 import "../App.css";
+import ShareSDK from "@gameplatform-sdk/share";
 
 class LandingPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isDim: false,
-      visitCount: 0
+      visitCount: 0,
+      image: null,
+      url: "",
+      shortenedUrl: ""
     };
   }
 
@@ -41,6 +45,7 @@ class LandingPage extends Component {
   }
 
   componentDidMount() {
+    // setTimeout(() => this.addScreenshotListener(), 1000);
     this.setState({ visitCount: this.state.visitCount + 1 });
   }
 
@@ -83,6 +88,31 @@ class LandingPage extends Component {
     );
   };
 
+  getRecentImage = () => {
+    window["bridgeCallHandler"](
+      "getRecentImage",
+      {
+        width: 0,
+        height: 1500,
+        tnWidth: 200,
+        tnHeight: 200
+      },
+      res => {
+        this.setState({ image: res.data.image });
+      }
+    );
+  };
+
+  addScreenshotListener = () => {
+    window["bridgeCallHandler"]("registerScreenshotDetection", {}, res => {
+      if (res.error === 0) {
+        window["bridgeRegisterHandler"]("SCREENSHOT_EVENT", res => {
+          res.error === 0 && this.getRecentImage();
+        });
+      }
+    });
+  };
+
   addShare = () => {
     window["bridgeCallHandler"]("configurePage", {
       navbar: {
@@ -120,6 +150,37 @@ class LandingPage extends Component {
     });
   };
 
+  checkPermission = () => {
+    window["bridgeCallHandler"](
+      "checkAppPermission",
+      {
+        permissionList: ["contact"]
+      },
+      ({ resultList }) => {
+        const list = JSON.parse(resultList);
+        if (list && list[0]) {
+          this.showToast("Contact permission is alredy given  ");
+        } else {
+          this.requestAppPermission();
+        }
+      }
+    );
+  };
+
+  requestAppPermission = () => {
+    window["bridgeCallHandler"](
+      "requestAppPermission",
+      {
+        permissionList: ["contact"],
+        popupText:
+          "In order to use this feature, Shopee needs to access your contact information."
+      },
+      data => {
+        typeof data === "string" ? alert(data) : alert(JSON.stringify(data));
+      }
+    );
+  };
+
   showPopup = () => {
     window["bridgeCallHandler"](
       "showPopUp",
@@ -143,11 +204,11 @@ class LandingPage extends Component {
     );
   };
 
-  showToast = () => {
+  showToast = message => {
     window["bridgeCallHandler"]("showToast", {
       toast: {
         iconType: "success", // Image on toast message. Ignored by Android. Only used by iOS. Available types: success & failure
-        message: "This is a toast!"
+        message
       }
     });
   };
@@ -221,9 +282,54 @@ class LandingPage extends Component {
     });
   };
 
+  handleUrlChange = event => {
+    this.setState({ url: event.target.value });
+  };
+
+  generateShortenedUrl = url => {
+    const shareSdk = new ShareSDK("FfXqXeCJ8I0lQbLlDz", "id", "test");
+    shareSdk
+      .generateShortLink(url, {
+        title: "share title",
+        desc: "share desc",
+        imgUrl: "https://cf.shopee.co.id/file/eca6e6060d408a6b6f97461a5b8c0c8e"
+      })
+      .then(res => {
+        console.log(res);
+        //{
+        //  code: 0,
+        //  msg: '',
+        //  data: {
+        //      shortLink: 'https://test.shp.ee/c8ghb67'
+        //  }
+        //}
+        res.data && this.setState({ shortenedUrl: res.data.shortLink });
+      });
+  };
+
   render() {
     return (
       <div className="App">
+        <div></div>
+        <div>
+          <input
+            type="text"
+            value={this.state.url}
+            onChange={this.handleUrlChange}
+          />
+        </div>
+        <div>
+          <button onClick={() => this.generateShortenedUrl(this.state.url)}>
+            Shorten Url
+          </button>
+        </div>
+        <div>{this.state.shortenedUrl}</div>
+        {/* <div className="item" onClick={this.getRecentImage}>
+          Screenshot Image
+          {this.state.image && (
+            <img alt="asd" src={this.state.image} height="300" />
+          )}
+        </div>
         <div
           className="overlay"
           onClick={this.undimNavbar}
@@ -231,14 +337,8 @@ class LandingPage extends Component {
         >
           <div className="overlay-text">Click anywhere to undim</div>
         </div>
-        <div className="item" onClick={this.showShare}>
-          Show share menu
-        </div>
-        <div className="item" onClick={this.addShare}>
-          Add share menu to navbar
-        </div>
-        <div className="item" onClick={this.removeShare}>
-          Remove share menu to navbar
+        <div className="item" onClick={this.checkPermission}>
+          Check contact permission
         </div>
         <div className="item" onClick={this.showPopup}>
           Show popup
@@ -252,20 +352,12 @@ class LandingPage extends Component {
         <div className="item" onClick={this.dimNavbar}>
           Dim navbar
         </div>
-        <div className="item" onClick={this.saveImage}>
-          Save Image
-        </div>
-        <div className="item" onClick={this.pickImage}>
-          Pick Image
-        </div>
-        <canvas id="myCanvas" height="300" width="300" />
-        <img id="myImage" style={{ display: "none" }} alt="myImage" />
         <div
           className="item"
           onClick={() => this.copy("Copy this text to clipboard!")}
         >
           Copy this text to clipboard!
-        </div>
+        </div> */}
       </div>
     );
   }
