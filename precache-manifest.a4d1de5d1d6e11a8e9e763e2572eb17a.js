@@ -8,19 +8,19 @@ self.__precacheManifest = [
     "url": "/web-bridge-playground/static/js/runtime~main.1682c335.js"
   },
   {
-    "revision": "ab2f8ba943a524a1dde0",
-    "url": "/web-bridge-playground/static/js/main.ab2f8ba9.chunk.js"
+    "revision": "1cf7c24c9d6ec55af4a1",
+    "url": "/web-bridge-playground/static/js/main.1cf7c24c.chunk.js"
   },
   {
     "revision": "e522b2879f597ec3bb48",
     "url": "/web-bridge-playground/static/js/2.e522b287.chunk.js"
   },
   {
-    "revision": "ab2f8ba943a524a1dde0",
+    "revision": "1cf7c24c9d6ec55af4a1",
     "url": "/web-bridge-playground/static/css/main.734481e3.chunk.css"
   },
   {
-    "revision": "f2b455a852fbb89a467b1ee2f00178f0",
+    "revision": "e73d2e45931e6de1bd980d3f129dd1d9",
     "url": "/web-bridge-playground/index.html"
   }
 ];
